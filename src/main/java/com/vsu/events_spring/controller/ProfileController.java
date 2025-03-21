@@ -1,0 +1,56 @@
+package com.vsu.events_spring.controller;
+
+import com.vsu.events_spring.dto.response.ProfileDTO;
+import com.vsu.events_spring.dto.request.SignUpRequest;
+import com.vsu.events_spring.dto.request.UpdateProfileCoordinatesRequest;
+import com.vsu.events_spring.dto.request.UpdateProfileRequest;
+import com.vsu.events_spring.service.ProfileService;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Validated
+@RestController
+@RequestMapping("/api/profiles")
+@AllArgsConstructor
+public class ProfileController {
+    private final ProfileService profileService;
+
+    @PostMapping
+    public ResponseEntity<ProfileDTO> createProfile(@Valid @RequestBody SignUpRequest signUpRequest) {
+        ProfileDTO createdProfile = profileService.createNewProfile(signUpRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
+    }
+
+    @PutMapping("/coordinates")
+    public ResponseEntity<List<Long>> updateProfileCoordinates(@RequestBody UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
+        try {
+            List<Long> idLightRooms = profileService.updateCoordinates(updateProfileCoordinatesRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(idLightRooms);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ProfileDTO> deleteProfile(@PathVariable(value = "id") Long id) {
+        ProfileDTO profileDTO = profileService.deleteProfile(id);
+        return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProfileDTO> getProfileById(@PathVariable(value = "id") Long id) {
+        ProfileDTO profileDTO = profileService.getProfile(id);
+        return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProfileDTO> updateProfile(@PathVariable(value = "id") Long id, @Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
+        return null;
+    }
+}
