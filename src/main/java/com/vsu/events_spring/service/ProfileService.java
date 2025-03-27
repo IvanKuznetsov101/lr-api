@@ -1,9 +1,12 @@
 package com.vsu.events_spring.service;
 
+import com.vsu.events_spring.dto.response.EventDTO;
 import com.vsu.events_spring.dto.response.ProfileDTO;
+import com.vsu.events_spring.entity.Event;
 import com.vsu.events_spring.entity.Profile;
 import com.vsu.events_spring.exception.LoginExistsException;
 import com.vsu.events_spring.exception.ProfileNotFountException;
+import com.vsu.events_spring.repository.EventRepository;
 import com.vsu.events_spring.repository.LightRoomRepository;
 import com.vsu.events_spring.repository.ProfileRepository;
 import com.vsu.events_spring.dto.request.SignUpRequest;
@@ -18,8 +21,10 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class ProfileService {
+    private final EventMapperService eventMapperService;
     private ProfileRepository profileRepository;
     private LightRoomRepository lightRoomRepository;
+    private EventRepository eventRepository;
     private ProfileMapperService profileMapperService;
     private PasswordEncoder passwordEncoder;
 
@@ -79,9 +84,14 @@ public class ProfileService {
         return profileMapperService.toDTO(updatedProfile);
     }
 
-    public List<Long> updateCoordinates(UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
+    public List<Long> updateCoordinatesAndGetIds(UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
         String pointWKT = "POINT(" + updateProfileCoordinatesRequest.getLongitude() + " " + updateProfileCoordinatesRequest.getLatitude() + ")";
         profileRepository.updateCoordinates(updateProfileCoordinatesRequest.getId(), pointWKT);
         return lightRoomRepository.findByProfileCoordinates(pointWKT);
+    }
+    public List<EventDTO> updateCoordinatesAndGetEvents(UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
+        String pointWKT = "POINT(" + updateProfileCoordinatesRequest.getLongitude() + " " + updateProfileCoordinatesRequest.getLatitude() + ")";
+        profileRepository.updateCoordinates(updateProfileCoordinatesRequest.getId(), pointWKT);
+        return eventMapperService.toEventsDTO(eventRepository.findByProfileCoordinates(pointWKT));
     }
 }

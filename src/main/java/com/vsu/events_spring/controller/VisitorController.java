@@ -27,4 +27,14 @@ public class VisitorController {
         VisitorDTO visitorDTO = visitorService.updateEndTimeVisitor(idVisitor);
         return ResponseEntity.status(HttpStatus.OK).body(visitorDTO);
     }
+    @GetMapping("/profile/{id}")
+    public ResponseEntity<VisitorDTO> getCurrentVisitorByProfileId(@PathVariable(value = "id") Long profileId) {
+        VisitorDTO visitorId = visitorService.getCurrentVisitorByProfileId(profileId);
+        return visitorId != null ? ResponseEntity.ok(visitorId) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+    @GetMapping("/lightroom/{id}")
+    public ResponseEntity<Long> getVisitorCountByLightRoomId(@PathVariable(value = "id") Long lightRoomId) {
+        Long count = visitorService.getVisitorCountByLightRoomId(lightRoomId);
+        return ResponseEntity.status(HttpStatus.OK).body(count);
+    }
 }

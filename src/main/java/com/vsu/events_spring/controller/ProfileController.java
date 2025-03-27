@@ -1,5 +1,6 @@
 package com.vsu.events_spring.controller;
 
+import com.vsu.events_spring.dto.response.EventDTO;
 import com.vsu.events_spring.dto.response.ProfileDTO;
 import com.vsu.events_spring.dto.request.SignUpRequest;
 import com.vsu.events_spring.dto.request.UpdateProfileCoordinatesRequest;
@@ -27,11 +28,20 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProfile);
     }
 
-    @PutMapping("/coordinates")
-    public ResponseEntity<List<Long>> updateProfileCoordinates(@RequestBody UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
+    @PutMapping(value = "/coordinates", params = "type=get-ids")
+    public ResponseEntity<List<Long>> updateProfileCoordinatesAndGetIds(@RequestBody UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
         try {
-            List<Long> idLightRooms = profileService.updateCoordinates(updateProfileCoordinatesRequest);
+            List<Long> idLightRooms = profileService.updateCoordinatesAndGetIds(updateProfileCoordinatesRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(idLightRooms);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+    @PutMapping(value = "/coordinates", params = "type=get-events")
+    public ResponseEntity<List<EventDTO>> updateProfileCoordinatesAndGetEvents(@RequestBody UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
+        try {
+            List<EventDTO> eventDTOS = profileService.updateCoordinatesAndGetEvents(updateProfileCoordinatesRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(eventDTOS);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
         }

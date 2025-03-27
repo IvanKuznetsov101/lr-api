@@ -1,12 +1,15 @@
 package com.vsu.events_spring.service;
 
 import com.vsu.events_spring.configuration.AppConfig;
+import com.vsu.events_spring.dto.response.EventDTO;
 import com.vsu.events_spring.dto.response.LightRoomDTO;
+import com.vsu.events_spring.entity.Event;
 import com.vsu.events_spring.entity.LightRoom;
 import com.vsu.events_spring.exception.ProfileNotFountException;
 import com.vsu.events_spring.repository.LightRoomRepository;
 import com.vsu.events_spring.dto.request.CreateLightRoomRequest;
 import com.vsu.events_spring.dto.request.GetPointsInAreaRequest;
+import com.vsu.events_spring.repository.ProfileRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +26,7 @@ public class LightRoomService {
     private final EventService eventService;
 
     private LightRoomRepository lightRoomRepository;
+    private ProfileRepository profileRepository;
 
     public LightRoomDTO createNewLightRoom(CreateLightRoomRequest createLightRoomRequest) {
         String pointWKT = "POINT(" + createLightRoomRequest.getLongitude() + " " + createLightRoomRequest.getLatitude() + ")";
@@ -65,5 +69,8 @@ public class LightRoomService {
     public List<LightRoomDTO> getLightRoomsInArea(GetPointsInAreaRequest getPointsInAreaRequest) {
         List<LightRoom> lightRooms = lightRoomRepository.findByArea(getPointsInAreaRequest);
         return lightRoomMapperService.toLightRoomsDTO(lightRooms);
+    }
+    public LightRoomDTO getLightRoomByEventId(Long eventId){
+        return lightRoomMapperService.toDTO(lightRoomRepository.findByEventId(eventId));
     }
 }

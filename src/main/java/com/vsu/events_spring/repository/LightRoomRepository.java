@@ -1,6 +1,7 @@
 package com.vsu.events_spring.repository;
 
 import com.vsu.events_spring.configuration.AppConfig;
+import com.vsu.events_spring.entity.Event;
 import com.vsu.events_spring.entity.LightRoom;
 import com.vsu.events_spring.dto.request.GetPointsInAreaRequest;
 import lombok.AllArgsConstructor;
@@ -75,5 +76,13 @@ public class LightRoomRepository {
             return Collections.emptyList();
         }
     }
-
+    public LightRoom findByEventId(Long id) {
+        try {
+            String sql = "SELECT * FROM light_room " +
+                    "WHERE id_event = ? AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC'";
+            return jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(LightRoom.class), id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
 }

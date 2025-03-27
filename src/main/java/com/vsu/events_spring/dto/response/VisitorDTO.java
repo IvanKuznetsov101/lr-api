@@ -10,4 +10,5 @@ import lombok.Data;
 public class VisitorDTO {
     private Long idLightRoom;
     private Long idVisitor;
+    private Long idProfile;
 }

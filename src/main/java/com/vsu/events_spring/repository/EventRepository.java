@@ -1,5 +1,6 @@
 package com.vsu.events_spring.repository;
 
+import com.vsu.events_spring.configuration.AppConfig;
 import com.vsu.events_spring.entity.Event;
 import com.vsu.events_spring.entity.LightRoom;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 public class EventRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final AppConfig appConfig;
 
     public Long create(Event event) {
         String sql = "INSERT INTO event (title, description, age_limit, profile_id) VALUES (?, ?, ?, ?) RETURNING id_event";
@@ -81,5 +83,18 @@ public class EventRepository {
                     "FROM light_room lr " +
                     "WHERE lr.light_room_end_time >= CURRENT_TIMESTAMP)";
         return  jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(Event.class), id);
+    }
+    public List<Event> findByProfileCoordinates(String profileCoordinates) {
+        try {
+            int radius = appConfig.getRadius();
+            String sql = "SELECT * FROM event WHERE id_event in ("+
+                    "SELECT id_event FROM light_room lr " +
+                    "WHERE ST_DWithin(ST_GeomFromText(?, 4326), lr.light_room_coordinates, ?) " +
+                    "AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC')";
+            Object[] params = new Object[]{profileCoordinates, radius};
+            return jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(Event.class), params);
+        } catch (DataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 }

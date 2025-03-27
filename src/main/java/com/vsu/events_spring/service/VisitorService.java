@@ -2,9 +2,15 @@ package com.vsu.events_spring.service;
 
 import com.vsu.events_spring.dto.response.VisitorDTO;
 import com.vsu.events_spring.dto.request.CreateVisitorRequest;
+import com.vsu.events_spring.entity.Profile;
 import com.vsu.events_spring.entity.Visitor;
+import com.vsu.events_spring.exception.LightRoomNotFountException;
+import com.vsu.events_spring.exception.ProfileNotFountException;
+import com.vsu.events_spring.repository.LightRoomRepository;
+import com.vsu.events_spring.repository.ProfileRepository;
 import com.vsu.events_spring.repository.VisitorRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,6 +21,9 @@ import java.time.ZoneOffset;
 @AllArgsConstructor
 public class VisitorService {
     private VisitorRepository visitorRepository;
+    private ProfileRepository profileRepository;
+    private VisitorMapperService visitorMapperService;
+    private LightRoomRepository lightRoomRepository;
 
     public VisitorDTO createVisitor(CreateVisitorRequest createVisitorRequest) {
         if(createVisitorRequest.getVisitorId()!= null){
@@ -27,8 +36,9 @@ public class VisitorService {
                         .build();
         Long idVisitor = visitorRepository.create(visitor);
         return VisitorDTO.builder()
-                .idVisitor(idVisitor)
+                .idProfile(createVisitorRequest.getProfileId())
                 .idLightRoom(createVisitorRequest.getLightRoomId())
+                .idVisitor(idVisitor)
                 .build();
     }
     public VisitorDTO updateEndTimeVisitor(Long idVisitor) {
@@ -36,5 +46,17 @@ public class VisitorService {
         return VisitorDTO.builder()
                 .idVisitor(idVisitor)
                 .build();
+    }
+    public VisitorDTO getCurrentVisitorByProfileId(Long profileId){
+        if (profileRepository.findById(profileId) == null){
+            throw new ProfileNotFountException("idProfile:" + profileId);
+        }
+        return visitorMapperService.toDTO(visitorRepository.getCurrentVisitorByProfileId(profileId));
+    }
+    public Long getVisitorCountByLightRoomId(Long lightRoomId){
+        if( lightRoomRepository.findById(lightRoomId) == null){
+            throw new LightRoomNotFountException("idLightRoom:" + lightRoomId);
+        }
+        return visitorRepository.getVisitorCountByLightRoomId(lightRoomId);
     }
 }

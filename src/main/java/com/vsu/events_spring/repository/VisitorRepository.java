@@ -44,4 +44,14 @@ public class VisitorRepository {
         String sql = "UPDATE visitor SET visitor_end_time = current_timestamp AT TIME ZONE 'UTC' WHERE id_visitor = ?";
         jdbcTemplate.update(sql, idVisitor);
     }
+    public Visitor getCurrentVisitorByProfileId(Long idProfile){
+        String sql = "SELECT * FROM visitor WHERE id_profile = ? AND visitor_end_time is NULL";
+        return jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(Visitor.class), idProfile);
+    }
+    public Long getVisitorCountByLightRoomId(Long lightRoomId){
+        String sql = "SELECT COUNT(id_visitor) FROM visitor\n" +
+                "WHERE id_light_room = ? AND visitor_end_time IS NULL";
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, lightRoomId);
+        return count != null ? count : 0L;
+    }
 }
