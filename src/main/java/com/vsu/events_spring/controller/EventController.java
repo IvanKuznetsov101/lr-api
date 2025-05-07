@@ -3,9 +3,12 @@ package com.vsu.events_spring.controller;
 import com.vsu.events_spring.dto.response.EventDTO;
 import com.vsu.events_spring.dto.request.CreateEventRequest;
 import com.vsu.events_spring.dto.request.UpdateEventRequest;
+import com.vsu.events_spring.dto.response.LastAttendedEventResponse;
 import com.vsu.events_spring.service.EventService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,6 +22,8 @@ import java.util.List;
 @AllArgsConstructor
 public class EventController {
     private final EventService eventService;
+    @Autowired
+    private HttpServletRequest request;
 
     @PostMapping
     public ResponseEntity<EventDTO> createEvent(@Valid @RequestBody CreateEventRequest eventRequest) {
@@ -66,6 +71,13 @@ public class EventController {
             @PathVariable(value = "profileId") Long profileId) {
         EventDTO eventDTO = eventService.getActualEventByProfileId(profileId);
         return ResponseEntity.status(HttpStatus.OK).body(eventDTO);
+    }
+    @GetMapping(value = "/profile/{profileId}", params = "type=last-events")
+    public ResponseEntity<List<LastAttendedEventResponse>> getTheLastAttendedEvents(
+            @PathVariable(value = "profileId") Long profileId) {
+        String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/api/images";
+        List<LastAttendedEventResponse> events = eventService.getTheLastAttendedEvents(profileId, baseUrl);
+        return ResponseEntity.status(HttpStatus.OK).body(events);
     }
 
     @GetMapping("/lightRoom/{lightRoomId}")

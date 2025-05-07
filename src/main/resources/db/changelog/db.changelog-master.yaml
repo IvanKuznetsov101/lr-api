@@ -17,4 +17,8 @@ databaseChangeLog:
       file: db/changelog/scripts/07_alter_light_room_table.sql
   - include:
       file: db/changelog/scripts/08_alter_image_table.sql
+  - include:
+      file: db/changelog/scripts/09_create_reviews_table.sql
+  - include:
+      file: db/changelog/scripts/10_alter_event_table.sql
 

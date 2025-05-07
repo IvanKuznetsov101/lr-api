@@ -1,6 +1,7 @@
 package com.vsu.events_spring.controller;
 
 import com.vsu.events_spring.dto.response.EventDTO;
+import com.vsu.events_spring.dto.response.ExtendedProfileDTO;
 import com.vsu.events_spring.dto.response.ProfileDTO;
 import com.vsu.events_spring.dto.request.SignUpRequest;
 import com.vsu.events_spring.dto.request.UpdateProfileCoordinatesRequest;
@@ -53,14 +54,26 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}",  params = "type=short")
     public ResponseEntity<ProfileDTO> getProfileById(@PathVariable(value = "id") Long id) {
         ProfileDTO profileDTO = profileService.getProfile(id);
         return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
     }
+    @GetMapping(value = "/{id}",  params = "type=full")
+    public ResponseEntity<ExtendedProfileDTO> getFullProfileById(@PathVariable(value = "id") Long id) {
+        ExtendedProfileDTO extendedProfileDTO = profileService.getFullProfile(id);
+        return ResponseEntity.status(HttpStatus.OK).body(extendedProfileDTO);
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<ProfileDTO> updateProfile(@PathVariable(value = "id") Long id, @Valid @RequestBody UpdateProfileRequest updateProfileRequest) {
-        return null;
+        ProfileDTO profileDTO = profileService.updateProfile(id, updateProfileRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
+    }
+    @GetMapping("/event/{id}")
+    public ResponseEntity<ProfileDTO> getProfileByLightRoomId(@PathVariable(value = "id") Long id) {
+        ProfileDTO profileDTO = profileService.getProfileByEventId(id);
+        return ResponseEntity.status(HttpStatus.OK).body(profileDTO);
     }
 }

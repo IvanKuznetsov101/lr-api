@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 public class UpdateEventRequest {
     @NotBlank
-    @Size(min = 3, max = 30)
     private String title;
     private String description;
     @NotNull

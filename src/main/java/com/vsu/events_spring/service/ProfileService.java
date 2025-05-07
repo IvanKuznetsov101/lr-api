@@ -1,8 +1,8 @@
 package com.vsu.events_spring.service;
 
 import com.vsu.events_spring.dto.response.EventDTO;
+import com.vsu.events_spring.dto.response.ExtendedProfileDTO;
 import com.vsu.events_spring.dto.response.ProfileDTO;
-import com.vsu.events_spring.entity.Event;
 import com.vsu.events_spring.entity.Profile;
 import com.vsu.events_spring.exception.LoginExistsException;
 import com.vsu.events_spring.exception.ProfileNotFountException;
@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +28,7 @@ public class ProfileService {
     private EventRepository eventRepository;
     private ProfileMapperService profileMapperService;
     private PasswordEncoder passwordEncoder;
+
 
 
     public ProfileDTO createNewProfile(SignUpRequest signUpRequest) {
@@ -60,6 +62,20 @@ public class ProfileService {
         }
         return profileMapperService.toDTO(profile);
     }
+    public ExtendedProfileDTO getFullProfile(Long id) {
+        Profile profile = profileRepository.findById(id);
+        if (profile == null) {
+            throw new ProfileNotFountException("idProfile:" + id);
+        }
+        return profileMapperService.toUpdateDTO(profile);
+    }
+    public ProfileDTO getProfileByEventId(Long eventId) {
+        Profile profile =profileRepository.findByEventId(eventId);
+        if (profile == null) {
+            throw new ProfileNotFountException("idEvent:" + eventId);
+        }
+        return profileMapperService.toDTO(profile);
+    }
 
     public ProfileDTO getProfileByLogin(String login) {
         Profile profile = profileRepository.findByUserName(login);
@@ -70,24 +86,28 @@ public class ProfileService {
     }
 
     public ProfileDTO updateProfile(Long id, UpdateProfileRequest updateProfileRequest) {
-        Profile profile = profileRepository.findById(id);
-        if (profile == null) {
-            throw new ProfileNotFountException("idProfile:" + id);
+        if(profileRepository.findById(id) == null){
+            throw new ProfileNotFountException("profileId: " + id);
         }
-        Profile updatedProfile = Profile.builder()
-                .full_name(updateProfileRequest.getFullName())
-                .username(updateProfileRequest.getUsername())
-                .password(updateProfileRequest.getPassword())
-                .email(updateProfileRequest.getEmail())
-                .build();
-        profileRepository.update(updatedProfile);
-        return profileMapperService.toDTO(updatedProfile);
+        Profile profile =  profileRepository.findByUserName(updateProfileRequest.getUsername());
+        if (profile == null || Objects.equals(profile.getId_profile(), id)) {
+            Profile updatedProfile = Profile.builder()
+                    .id_profile(id)
+                    .full_name(updateProfileRequest.getFullName())
+                    .username(updateProfileRequest.getUsername())
+                    .email(updateProfileRequest.getEmail())
+                    .date_of_birth(updateProfileRequest.getDate_of_birth())
+                    .build();
+            profileRepository.update(updatedProfile);
+            return profileMapperService.toDTO(updatedProfile);
+        }
+        throw new LoginExistsException(updateProfileRequest.getUsername());
     }
 
     public List<Long> updateCoordinatesAndGetIds(UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
         String pointWKT = "POINT(" + updateProfileCoordinatesRequest.getLongitude() + " " + updateProfileCoordinatesRequest.getLatitude() + ")";
         profileRepository.updateCoordinates(updateProfileCoordinatesRequest.getId(), pointWKT);
-        return lightRoomRepository.findByProfileCoordinates(pointWKT);
+        return lightRoomRepository.findByProfileCoordinates(pointWKT, updateProfileCoordinatesRequest.getId());
     }
     public List<EventDTO> updateCoordinatesAndGetEvents(UpdateProfileCoordinatesRequest updateProfileCoordinatesRequest) {
         String pointWKT = "POINT(" + updateProfileCoordinatesRequest.getLongitude() + " " + updateProfileCoordinatesRequest.getLatitude() + ")";

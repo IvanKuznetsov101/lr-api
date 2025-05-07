@@ -10,6 +10,7 @@ import com.vsu.events_spring.repository.LightRoomRepository;
 import com.vsu.events_spring.dto.request.CreateLightRoomRequest;
 import com.vsu.events_spring.dto.request.GetPointsInAreaRequest;
 import com.vsu.events_spring.repository.ProfileRepository;
+import com.vsu.events_spring.repository.VisitorRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class LightRoomService {
     private final LightRoomMapperService lightRoomMapperService;
     private final AppConfig appConfig;
     private final EventService eventService;
+    private final VisitorRepository visitorRepository;
 
     private LightRoomRepository lightRoomRepository;
     private ProfileRepository profileRepository;
@@ -49,7 +51,10 @@ public class LightRoomService {
         if (lightRoom == null) {
             throw new ProfileNotFountException("idLightRoom:" + id);
         }
-        lightRoomRepository.delete(id);
+        Instant now = Instant.now();
+        LocalDateTime endTime = LocalDateTime.ofInstant(now, ZoneOffset.UTC);
+        lightRoomRepository.update(id, endTime);
+        visitorRepository.setEndTimeByLightRoomId(id);
         return lightRoomMapperService.toDTO(lightRoom);
     }
 

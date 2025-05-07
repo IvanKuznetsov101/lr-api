@@ -1,7 +1,10 @@
 package com.vsu.events_spring.service;
 
 import com.vsu.events_spring.dto.response.EventDTO;
+import com.vsu.events_spring.dto.response.LastAttendedEventResponse;
+import com.vsu.events_spring.dto.response.ReviewWithProfileResponse;
 import com.vsu.events_spring.entity.Event;
+import com.vsu.events_spring.entity.LastAttendedEvent;
 import com.vsu.events_spring.exception.EventNotFountException;
 import com.vsu.events_spring.exception.ProfileNotFountException;
 import com.vsu.events_spring.exception.UnauthorizedAccessException;
@@ -12,6 +15,7 @@ import com.vsu.events_spring.dto.request.UpdateEventRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -90,6 +94,21 @@ public class EventService {
     public EventDTO getEventByLightRoomId(Long lightRoomId) {
         Event event = eventRepository.findByLightRoomId(lightRoomId);
         return eventMapperService.toDTO(event);
+    }
+    public List<LastAttendedEventResponse> getTheLastAttendedEvents(Long profileId, String baseUrl) {
+        if (profileRepository.findById(profileId) == null){
+            throw new ProfileNotFountException("idProfile:" + profileId);
+        }
+        List<LastAttendedEvent> events = eventRepository.findTheLastAttendedEvents(profileId);
+        return  events.stream()
+                .map(event -> new LastAttendedEventResponse(
+                        event.getId_event(),
+                        event.getTitle(),
+                        event.getProfile_id(),
+                        baseUrl + "/" +  event.getId_image(),
+                        event.getVisitor_end_time()
+                ))
+                .collect(Collectors.toList());
     }
 
 }

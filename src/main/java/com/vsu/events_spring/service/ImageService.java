@@ -73,12 +73,19 @@ public class ImageService {
         }
         imageRepository.saveImages(images);
     }
-    public List<Long> getImagesByProfileId(Long profileId) {
-        return imageRepository.findImagesByProfileId(profileId);
+    public String getImageByProfileId(Long profileId, String baseUrl) {
+        Long id = imageRepository.findImageByProfileId(profileId);
+        if (id != null){
+            return baseUrl + "/" + id;
+        }
+        return null;
     }
 
     public byte[] getImageById(Long Id) {
         return imageRepository.findImageById(Id);
+    }
+    public void deleteByIds(List<Long> id){
+        imageRepository.deleteByIds(id);
     }
 
     public List<Long> getIdsImagesByEventId(Long eventId) {

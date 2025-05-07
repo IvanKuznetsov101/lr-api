@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,6 +32,11 @@ public class LightRoomRepository {
         String sql = "DELETE FROM light_room WHERE id_light_room = ?";
         jdbcTemplate.update(sql, id);
     }
+    public void update(Long id, LocalDateTime endTime) {
+        String sql = "UPDATE light_room SET light_room_end_time = ? WHERE id_light_room = ?";
+        Object[] params = new Object[]{endTime, id};
+        jdbcTemplate.update(sql, params);
+    }
 
     public LightRoom findById(Long id) {
         try {
@@ -46,13 +52,15 @@ public class LightRoomRepository {
         return jdbcTemplate.query(sql, BeanPropertyRowMapper.newInstance(LightRoom.class));
     }
 
-    public List<Long> findByProfileCoordinates(String profileCoordinates) {
+    public List<Long> findByProfileCoordinates(String profileCoordinates, Long id) {
         try {
             int radius = appConfig.getRadius();
             String sql = "SELECT id_light_room FROM light_room lr " +
+                    "JOIN event e ON lr.id_event = e.id_event " +
                     "WHERE ST_DWithin(ST_GeomFromText(?, 4326), lr.light_room_coordinates, ?) " +
-                    "AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC'";
-            Object[] params = new Object[]{profileCoordinates, radius};
+                    "AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC' " +
+                    "AND e.profile_id != ?";
+            Object[] params = new Object[]{profileCoordinates, radius, id};
             return jdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getLong("id_light_room"));
         } catch (DataAccessException e) {
             return Collections.emptyList();
@@ -81,6 +89,16 @@ public class LightRoomRepository {
             String sql = "SELECT * FROM light_room " +
                     "WHERE id_event = ? AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC'";
             return jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(LightRoom.class), id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+    public LightRoom checkEndDate(Long lightRoomId){
+        try{
+            String sql = """
+                    SELECT * FROM light_room WHERE id_light_room = ? AND light_room_end_time >= current_timestamp AT TIME ZONE 'UTC'
+                    """;
+            return jdbcTemplate.queryForObject(sql, BeanPropertyRowMapper.newInstance(LightRoom.class), lightRoomId);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

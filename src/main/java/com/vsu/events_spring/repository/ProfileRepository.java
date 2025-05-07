@@ -39,6 +39,18 @@ public class ProfileRepository {
             return null;
         }
     }
+    public Profile findByEventId(Long id) {
+        try {
+            String sql = "SELECT p.* \n" +
+                    "FROM profile p\n" +
+                    "JOIN event e ON p.id_profile = e.profile_id\n" +
+                    "WHERE e.id_event = ?\n" +
+                    "LIMIT 1;";
+            return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Profile.class), id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
 
     public List<Profile> findAll() {
         String sql = "SELECT * FROM profile";
@@ -51,8 +63,8 @@ public class ProfileRepository {
     }
 
     public void update(Profile profile) {
-        String sql = "UPDATE profile SET full_name = ?, username = ?, email = ?, date_of_birth = ?, password = ? WHERE id_profile = ?";
-        Object[] params = new Object[]{profile.getFull_name(), profile.getUsername(), profile.getEmail(), profile.getDate_of_birth(), profile.getPassword(), profile.getId_profile()};
+        String sql = "UPDATE profile SET full_name = ?, username = ?, email = ?, date_of_birth = ? WHERE id_profile = ?";
+        Object[] params = new Object[]{profile.getFull_name(), profile.getUsername(), profile.getEmail(), profile.getDate_of_birth(), profile.getId_profile()};
         jdbcTemplate.update(sql, params);
     }
     public void updateCoordinates(Long id,  String newCoordinates) {

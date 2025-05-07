@@ -17,9 +17,6 @@ public class UpdateProfileRequest {
     @Size(min = 5, max = 30)
     private String username;
     @NotBlank
-    @Size(min = 5, max = 30)
-    private String password;
-    @NotBlank
     @Email
     private String email;
     @NotNull

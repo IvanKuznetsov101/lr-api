@@ -28,9 +28,13 @@ public class ImageRepository {
             ps.setBytes(3, image.getImage());
         });
     }
-    public List<Long> findImagesByProfileId(Long profileId) {
-        String sql = "SELECT id_image FROM image WHERE id_profile = ?";
-        return jdbcTemplate.queryForList(sql, new Long[]{profileId}, Long.class);
+    public Long findImageByProfileId(Long profileId) {
+        String sql = "SELECT id_image FROM image WHERE id_profile = ? LIMIT 1";
+        try {
+            return jdbcTemplate.queryForObject(sql, Long.class, profileId);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public byte[] findImageById(Long id) {
@@ -54,6 +58,21 @@ public class ImageRepository {
     public void deleteByEventId(Long id) {
         String sql = "DELETE FROM image WHERE id_event = ?";
         jdbcTemplate.update(sql, id);
+    }
+    public void deleteByIds(List<Long> id){
+        if (id == null || id.isEmpty()) {
+            return; // Nothing to delete
+        }
+
+        // Build the placeholders: one "?" for each ID
+        String placeholders = String.join(",", id.stream().map(i -> "?").toList());
+        String sql = "DELETE FROM image WHERE id_image IN (" + placeholders + ")";
+
+        // Convert List<Long> to an array of Objects for JdbcTemplate
+        Object[] params = id.toArray();
+
+        // Execute the query
+        jdbcTemplate.update(sql, params);
     }
 
 }

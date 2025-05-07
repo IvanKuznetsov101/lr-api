@@ -9,5 +9,4 @@ public class CreateVisitorRequest {
     private Long profileId;
     @NotNull
     private Long lightRoomId;
-    private Long visitorId;
 }
